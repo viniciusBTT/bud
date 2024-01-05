@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 
 @Data
@@ -15,11 +14,11 @@ public class SaleItem
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "sale_id")
+    @JoinColumn
     private Sale sale;
 
     @NotNull

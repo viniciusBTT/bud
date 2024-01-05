@@ -38,17 +38,11 @@ public class SaleController
 
     @PostMapping
     @ResponseBody
-    public Sale save(@RequestBody SaleSaveDTO saleSaveDTO, RedirectAttributes ra)
+    public  Sale saveSale(@RequestBody List<SaleSaveDTO> saleItems)
     {
-        Sale newSale = saleService.save(new Sale(saleSaveDTO.valor()));
-
-        //newSale.setItems(productsService.getCompleteSaleItems(saleSaveDTO.saleItens(), newSale));
-
-        List<SaleItem> items = itemSaleService.saveItemSale(productsService.getCompleteSaleItems(saleSaveDTO.saleItens(), newSale));
-)
-
-        ra.addAttribute("success","sucesso");
-        saleService.save(newSale);
+        List<SaleItem> fullSaleItems = productsService.getCompleteSaleItems(saleItems);
+        Double fullValue = saleService.getFullValue(fullSaleItems);
+        Sale newSale = new Sale(fullSaleItems , fullValue);
         return newSale;
     }
 }

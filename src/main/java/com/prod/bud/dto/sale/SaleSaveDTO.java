@@ -4,5 +4,5 @@ import com.prod.bud.model.SaleItem;
 
 import java.util.List;
 
-public record SaleSaveDTO( List<SaleItem> saleItens, Double valor){
+public record SaleSaveDTO( Integer id, Integer quantity){
 }

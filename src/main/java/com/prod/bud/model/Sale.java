@@ -25,9 +25,8 @@ public class Sale {
     @NotNull
     private Double valor;
 
-    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<SaleItem> items = new ArrayList<>();
-
 
     public Sale(List<SaleItem> saleItens, Double valor)
     {
