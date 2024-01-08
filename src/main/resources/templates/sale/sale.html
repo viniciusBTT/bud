@@ -4,29 +4,33 @@
             <div class="card-body ">
                 <div class="justify-content-center row row-cols-4 px-3 gap-4 d-flex">
                     <div class="card shadow col item-sale" th:each="product: ${products}"
-                         data-quantity="0" th:data-valueUn="${product.valor}" data-active=false>
+                         th:data-valueUn="${product.valor}" th:data-product-name="${product.name}" th:id="${product.id}" >
                         <div class="card-body row">
-                            <div class="col-10 checked-click-area" th:id="${product.id}">
+                            <div class="col-10 checked-click-area" th:data-product-id="${product.id}">
                                 <h5 class="card-title" th:text="${product.name}"></h5>
                                 <h6 class="card-subtitle mb-2 text-muted" th:text="'Estoque: '+${product.quantity}"></h6>
                                 <p class="card-text" th:text="${#strings.replace(#numbers.formatCurrency(product.valor), '.00', '')}"></p>
                             </div>
-                            <div class="col-2">
+                            <div class="col-2 mb-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" th:id="'input' + ${product.id}" onchange="toggleSelect(this)">
                                 </div>
                             </div>
-                            <div th:id="'selectContainer' + ${product.id}" style="display:none;" class="mt-2">
-                                <select class="form-select form-select-sm"  th:id="'select' + ${product.id}">
-                                    <option> Quantidade</option>
+                            <div th:id="'selectContainer' + ${product.id}" style="display:none;" >
+                                <select class="form-select form-select-sm"  th:id="'selectQuantity' + ${product.id}">
+                                    <option value="0"> Quantidade</option>
                                     <option th:each="index : ${#numbers.sequence(1, product.getQuantity())}" th:value="${index}" th:text="${index}"></option>
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="text-end">
-                    <span id="valueFull" class="font-monospace fs-3">RS 32,00</span>
+                <div class="d-grid gap-2 d-md-flex justify-content-between mt-4">
+                    <div>
+                        <button type="button" class="btn btn-success" onclick="confirmSale()">Confirmar</button>
+                        <button type="button" class="btn btn-secondary" onclick="cleanProductsSelectes()">Limpar</button>
+                    </div>
+                    <span id="valueFull" class="font-monospace fs-3">R$ 0,00</span>
                 </div>
             </div>
         </div>
