@@ -25,10 +25,8 @@ let saleConfirmJson = [];
 checkedClickArea.forEach((item) => {
     item.addEventListener("click", ()=> {
         var checkd = document.querySelector("#input" + item.dataset.productId)
-            if(checkd.checked == true)
-                checkd.checked = false;
-            else
-                checkd.checked = true
+
+        checkd.checked ? checkd.checked = false : checkd.checked = true;
 
         toggleSelect(checkd);
     });
@@ -42,16 +40,26 @@ function toggleSelect(checkbox)
     var selectContainer = document.getElementById("selectContainer" + productId);
 
     if (checkbox.checked)
+    {
         selectContainer.style.display = "block";
+
+    }
     else
+    {
         selectContainer.style.display = "none";
+        document.querySelector(`#selectQuantity${productId}`).value = 0;
+    }
 }
 
 
 
 //verificando o evento de change nos inputs e selects
-allSelectsEndChecks.forEach(element => element.addEventListener('change', genaretedValue));
+allSelectsEndChecks.forEach(element => element.addEventListener('change', setSpanValueFull));
 
+function  setSpanValueFull() {
+    spanValueFull.innerHTML = genaretedValue().toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' });
+
+}
 
 // varre todos os produtos selecionados e gera o valor total
 function genaretedValue()
@@ -59,15 +67,30 @@ function genaretedValue()
     fullValue = 0;
     itensSale.forEach(item=>
     {
-        if(document.querySelector(`#input${item.id}`).checked
-            && document.querySelector(`#selectQuantity${item.id}`).value > 0 )
-            fullValue += document.querySelector(`#selectQuantity${item.id}`).value * item.dataset.valueun;
+        let input = document.querySelector(`#input${item.id}`);
+        let selectQuantity = document.querySelector(`#selectQuantity${item.id}`)
+        if(input.checked  && selectQuantity.value > 0 )
+            fullValue += selectQuantity.value * item.dataset.valueun;
     })
-    spanValueFull.innerHTML = fullValue.toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' });
+    return fullValue
+}
+
+function confirmCleanProductsSelecteds(){
+    Swal.fire({
+        html: "Certeza que deseja limpas os produtos selecionados?",
+        background: '#f1f1f1',
+        showCancelButton: true,
+        cancelButtonText: "Cancelar",
+        showConfirmButton: true,
+        confirmButtonText: "Limpar",
+    }).then((result) => {
+        if (result.isConfirmed)
+            cleanProductsSelects();
+    });
 }
 
 //Limpando os produtos selecionados
-function cleanProductsSelectes()
+function cleanProductsSelects()
 {
     allSelectsEndChecks.forEach(item => {
         if (item.tagName.toLowerCase() === 'select')
@@ -80,28 +103,64 @@ function cleanProductsSelectes()
             toggleSelect(item);
         }
     })
-    genaretedValue()
+    setSpanValueFull();
 }
-function confirmSale(){
+function confirmSale()
+{
     let jsonProducts = jsonGenated();
-    if(!jsonProducts.length > 0)
-    {
+
+    if (jsonProducts.length > 0) {
+        let tableRows = '';
+        let fullValue = genaretedValue().toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' });
+
+
+        // Construa as linhas da tabela dinamicamente com base nos dados do JSON
+        jsonProducts.forEach((product, index) => {
+            tableRows += `<tr>
+                              <th scope="row">${index + 1}</th>
+                              <td>${product.productName}</td>
+                              <td>${product.quantity}</td>
+                          </tr>`;
+        });
+
         Swal.fire({
-            icon: 'success',
-            html: jsonProducts,
-            timer: 1700,
+            html: `<table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Produto</th>
+                          <th scope="col">Quantidade</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${tableRows}
+                      </tbody>
+                    </table>
+                    <div class="text-end">
+                        <span class="font-monospace fs-3">${fullValue}</span>
+                    </div>`,
+            background: '#f1f1f1',
+            showCancelButton: true,
+            cancelButtonText: "Cancelar",
+            showConfirmButton: true,
+            confirmButtonText: "Confirmar venda",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Lógica para confirmar a venda (você pode adicionar sua lógica aqui)
+                // Exemplo: fetch('/api/confirmSale', { method: 'POST', body: JSON.stringify(jsonProducts) })
+            }
+        });
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            html: 'Nenhum item ou quantidade selecionado',
             timerProgressBar: true,
             background: '#f1f1f1',
-            showConfirmButton: false,
-        })
+            backdrop: "rgba(0, 0, 0, 0)",
+        });
     }
-    else
-    {
-
-    }
-
-    console.log(jsonGenated());
 }
+
 /**
  * Gera um json com todos os produtos selecionado e as suas quantidades
  */
@@ -125,7 +184,6 @@ function jsonGenated()
             // Adiciona o objeto JSON ao array
             saleConfirmJson.push(jsonData);
         }
-
     });
     return saleConfirmJson;
 }

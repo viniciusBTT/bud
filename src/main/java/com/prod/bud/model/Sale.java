@@ -20,27 +20,28 @@ public class Sale {
 
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date saleDate ;
+    private Date saleDate;
 
     @NotNull
     private Double valor;
 
+
     @OneToMany(fetch = FetchType.EAGER)
     private List<SaleItem> items = new ArrayList<>();
 
-    public Sale(List<SaleItem> saleItens, Double valor)
-    {
+    public Sale(List<SaleItem> saleItens) {
         this.items = saleItens;
-        this.valor = valor;
+
     }
-    public Sale( Double valor)
-    {
-        this.saleDate = new Date();
-        this.valor = valor;
+    public Sale(){}
+
+    // Método para adicionar um único item à lista
+    public void addItem(SaleItem item) {
+        this.items.add(item);
     }
 
-
-
-
-
+    // Método para adicionar uma lista de itens à lista existente
+    public void addItems(List<SaleItem> items) {
+        this.items.addAll(items);
+    }
 }
