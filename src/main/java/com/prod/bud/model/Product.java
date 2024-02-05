@@ -31,10 +31,5 @@ public class Product
     @NotEmpty
     private Integer quantity;
 
-
-    private String insumos;
-
     public Product() {}
-
-
 }

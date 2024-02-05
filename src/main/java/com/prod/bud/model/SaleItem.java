@@ -17,9 +17,6 @@ public class SaleItem
     @ManyToOne(cascade = CascadeType.MERGE)
     private Product product;
 
-    @ManyToOne
-    @JoinColumn
-    private Sale sale;
 
     @NotNull
     private Integer quantitySold;

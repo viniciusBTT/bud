@@ -27,22 +27,21 @@ public class SaleService {
     @Autowired
     private ProductsService productsService;
 
-    public Sale createSale(SaleDTO saleDTO) {
+    public Sale createSaleEndSaveSale(List<SaleItemDTO> saleIntens)
+    {
         Sale sale = new Sale();
-        sale.setSaleDate(new Date());
-        sale.setValor(saleDTO.value());
-        System.out.println(sale);
-        List<SaleItem> saleItems = new ArrayList<>();
-        for (SaleItemDTO itemDTO : saleDTO.saleItens()) {
-            SaleItem saleItem = new SaleItem();
-            saleItem.setProduct(productsService.findById(itemDTO.productID()));
-            saleItem.setQuantitySold(itemDTO.quantity());
-            saleItem.setSale(sale);
+        List<SaleItem> itensSale = new ArrayList<>();
 
-            saleItems.add(saleItem);
+        for (SaleItemDTO iten : saleIntens)
+        {
+            Product product = productsService.findById(iten.productID());
+            product.setQuantity( product.getQuantity() - iten.quantity());
+            itensSale.add( new SaleItem(product, iten.quantity()));
+            sale.setValue((product.getValor() * iten.quantity()) + sale.getValue());
         }
-
-        sale.addItems(saleItems);
+        sale.addItems(itensSale);
+        sale.setDate(new Date());
+        sale = saleRepository.save(sale);
 
         return sale;
     }
@@ -57,34 +56,33 @@ public class SaleService {
     }
 
 
-    public Double getFullValue(List<SaleItem> saleItems)
-    {
-        Double fullValue = 0.0;
-        for (SaleItem saleItem : saleItems)
-        {
-            fullValue += saleItem.getProduct().getValor() * saleItem.getQuantitySold();
-        }
-        return  fullValue;
-    }
 
-    @Transactional
-    public Sale saveSale(Sale sale) {
-        // Salvando a venda
-        sale = saleRepository.save(sale);
-
-        // Associando a venda aos itens e salvando os itens
-        for (SaleItem item : sale.getItems())
-        {
-            item.setSale(sale);
-            itemSaleRepository.save(item);
-        }
-        return sale;
-    }
-
-
-    public Sale save ( Sale sale)
+    public Sale save (Sale sale)
     {
         return saleRepository.save(sale);
+    }
+
+    public  void deleteSaleEndRestoreStock (Integer id)
+    {
+        Sale sale = this.findById(id);
+        List<SaleItem> listaDeIntens = sale.getItens();
+        for (SaleItem iten : listaDeIntens)
+        {
+            Product product = productsService.findById(iten.getProduct().getId());
+            product.setQuantity(product.getQuantity() + iten.getQuantitySold());
+            productsService.save(product);
+        }
+        saleRepository.deleteById(id);
+
+    }
+
+    public double returnsFullValueSales()
+    {
+        var fullValue = saleRepository.getTotalSalesValue();
+        if (fullValue != null)
+            return fullValue;
+
+       return 0;
     }
 
 }

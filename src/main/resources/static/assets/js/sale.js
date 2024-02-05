@@ -57,7 +57,7 @@ function toggleSelect(checkbox)
 allSelectsEndChecks.forEach(element => element.addEventListener('change', setSpanValueFull));
 
 function  setSpanValueFull() {
-    spanValueFull.innerHTML = genaretedValue().toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' });
+    spanValueFull.innerHTML =` Valor Total:  ${genaretedValue().toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' })}`;
 
 }
 
@@ -77,12 +77,15 @@ function genaretedValue()
 
 function confirmCleanProductsSelecteds(){
     Swal.fire({
-        html: "Certeza que deseja limpas os produtos selecionados?",
+        html: "Certeza que deseja limpar os produtos selecionados?",
         background: '#f1f1f1',
         showCancelButton: true,
         cancelButtonText: "Cancelar",
         showConfirmButton: true,
         confirmButtonText: "Limpar",
+        confirmButtonColor: "#157347",
+        cancelButtonColor: "rgba(0, 0, 0, 0.30)"
+
     }).then((result) => {
         if (result.isConfirmed)
             cleanProductsSelects();
@@ -105,10 +108,31 @@ function cleanProductsSelects()
     })
     setSpanValueFull();
 }
+
+
+function generatedPostJson(){
+    let salePostJson = [];
+    itensSale.forEach(item => {
+        if(document.querySelector(`#input${item.id}`).checked
+            && document.querySelector(`#selectQuantity${item.id}`).value > 0 )
+        {
+            // Converte os data attributes e o id em um objeto JSON
+            const jsonData = {
+                productID: parseInt(item.id),
+                quantity: parseInt(document.querySelector(`#selectQuantity${item.id}`).value)
+            };
+
+            // Adiciona o objeto JSON ao array
+            salePostJson.push(jsonData);
+        }
+    });
+    return salePostJson
+}
+
 function confirmSale()
 {
     let jsonProducts = jsonGenated();
-
+    //se houver arquivos selecionado
     if (jsonProducts.length > 0) {
         let tableRows = '';
         let fullValue = genaretedValue().toLocaleString('pt-BR', { style: 'currency',currency: 'BRL' });
@@ -137,19 +161,72 @@ function confirmSale()
                       </tbody>
                     </table>
                     <div class="text-end">
-                        <span class="font-monospace fs-3">${fullValue}</span>
+                        <span class="font-monospace fs-4">Total: ${fullValue}</span>
                     </div>`,
             background: '#f1f1f1',
             showCancelButton: true,
             cancelButtonText: "Cancelar",
             showConfirmButton: true,
             confirmButtonText: "Confirmar venda",
+            confirmButtonColor: "#157347",
+            cancelButtonColor: "rgba(0, 0, 0, 0.30)"
         }).then((result) => {
             if (result.isConfirmed) {
-                // Lógica para confirmar a venda (você pode adicionar sua lógica aqui)
-                // Exemplo: fetch('/api/confirmSale', { method: 'POST', body: JSON.stringify(jsonProducts) })
+                let saleData = {
+                    "saleItens": generatedPostJson()
+                };
+
+                // Realiza a requisição POST
+                fetch('/sale/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(saleData),
+                })
+                    .then(data => {
+                        cleanProductsSelects();
+                        Swal.fire({
+                            html: "<p class='fs-5'> Pedido Pronto!<br/> :) Retire no bar, com a ficha.<p>",
+                            icon: "success",
+                            background: '#f1f1f1',
+                            showConfirmButton: true,
+                            confirmButtonText: "Confirmar",
+                            confirmButtonColor: "#157347",
+                        }).then((result) => {
+                            if (result.isConfirmed)
+                                Swal.fire({
+                                         icon: 'success',
+                                        html: success,
+                                    timer: 1400,
+                                        timerProgressBar: true,
+                                        background: '#f1f1f1',
+                                        showConfirmButton: false,
+                                    })
+
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, "1200");
+                        });
+
+
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            icon: 'error',
+                            html: error,
+                            timerProgressBar: true,
+                            background: '#f1f1f1 ',
+                            backdrop: "rgba(0, 0, 0, 0)" ,
+                        })
+                        cleanProductsSelects();
+                        setTimeout(() => {
+                            location.reload();
+                        }, "1700");
+                    });
             }
         });
+    //se não houver arquivos selecionado
     } else {
         Swal.fire({
             icon: 'warning',
@@ -157,6 +234,7 @@ function confirmSale()
             timerProgressBar: true,
             background: '#f1f1f1',
             backdrop: "rgba(0, 0, 0, 0)",
+            confirmButtonColor: "#157347",
         });
     }
 }
@@ -189,3 +267,23 @@ function jsonGenated()
 }
 
 
+
+
+const letreiro = document.getElementById('letreiro');
+
+// function moveLetreiro() {
+//     letreiro.style.transform = 'translateX(100%)';
+//     letreiro.style.transition = 'none';
+//
+//     setTimeout(() => {
+//         letreiro.style.transition = 'transform 10s linear';
+//         letreiro.style.transform = 'translateX(-100%)';
+//     }, 10);
+//
+//     setTimeout(() => {
+//         letreiro.style.transition = 'none';
+//         letreiro.style.transform = 'translateX(100%)';
+//     }, 10010);
+// }
+//
+// setInterval(moveLetreiro, 10);
